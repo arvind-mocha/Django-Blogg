@@ -1,0 +1,53 @@
+name: Test and audit
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: "false"
+      SECRET_KEY: "ci-only-secret-never-use-in-production-0123456789-abcdefghijk"
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt pip-audit
+      - run: mkdir -p data
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py test --settings=Mysite.test_settings
+      - run: python manage.py collectstatic --noinput
+      - run: python -m pip_audit -r requirements.txt --no-deps --disable-pip
+      - name: Production security checks
+        env:
+          ALLOWED_HOSTS: blog.example.com
+          SECURE_HSTS_INCLUDE_SUBDOMAINS: "true"
+          SECURE_HSTS_PRELOAD: "true"
+        run: python manage.py check --deploy --fail-level WARNING
+      - run: sh scripts/setup.sh
+      - run: docker compose build
+      - name: Verify image privacy and runtime user
+        run: >-
+          docker compose run --rm --no-deps --entrypoint python web -c
+          "import os,pathlib; p=pathlib.Path('/app');
+          assert os.getuid()!=0;
+          assert not any((p/name).exists() for name in ['.env','.git','media','db.sqlite3']);
+          assert not list(p.rglob('*.pyc'))"
+      - run: docker compose up -d --wait
+      - name: Verify live HTTP
+        run: >-
+          docker compose exec -T web python -c
+          "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8000/');
+          assert r.status==200"
+      - name: Stop test containers
+        if: always()
+        run: docker compose down --volumes
