@@ -137,6 +137,7 @@ copies. These commands stop writes briefly and archive the complete volume.
 `backups/` is ignored by Git and Docker.
 
 ```sh
+umask 077
 mkdir -p backups
 docker compose stop web
 docker compose run --rm --no-deps -T web python -c \
@@ -167,6 +168,7 @@ python3.12 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements.txt
 cp .env.example .env
+chmod 600 .env
 python -c 'import secrets; print(secrets.token_urlsafe(64))'
 ```
 

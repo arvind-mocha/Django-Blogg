@@ -11,6 +11,7 @@ upstream django_blog {
 server {
     listen 80;
     server_name blog.example.com;
+    access_log /var/log/nginx/blog-access.log blog_safe;
     return 301 https://blog.example.com$request_uri;
 }
 

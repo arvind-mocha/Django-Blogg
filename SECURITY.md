@@ -58,3 +58,4 @@ commits preserve published history.
 References: [Django deployment checklist](https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/),
 [Django upload security](https://docs.djangoproject.com/en/5.2/topics/security/#user-uploaded-content-security),
 and [the Django 5.2.19 security release](https://www.djangoproject.com/weblog/2026/nov/03/security-releases/).
+Historical cleanup guidance: [GitHub sensitive-data removal](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).
