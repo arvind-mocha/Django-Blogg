@@ -13,3 +13,14 @@
 !usersapp/templates/**
 !docker/
 !docker/entrypoint.sh
+
+# Directory exceptions above can re-include children; always exclude these.
+**/__pycache__
+**/__pycache__/**
+**/*.py[cod]
+**/*.sqlite3*
+**/*.log
+**/.env*
+**/.git
+**/.idea
+**/.aws
