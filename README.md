@@ -210,6 +210,6 @@ copy it to the configured data directory while the app is stopped, then migrate.
 Legacy avatar paths should be cleared and images reuploaded through the new
 validation; do not import unvalidated legacy media. S3 is no longer configured.
 
-See [SECURITY.md](SECURITY.md) for findings, changes, and the remaining exposure
-in previously published Git history. User passwords from the historical database
+See [SECURITY.md](SECURITY.md) for findings, changes, and cached or cloned copies
+that can remain after the history purge. User passwords from the historical database
 must be treated as compromised even though Django stored hashes.

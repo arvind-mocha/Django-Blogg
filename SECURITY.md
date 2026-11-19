@@ -5,7 +5,7 @@ dependencies, and local container behavior; a deployed host/proxy was not audite
 
 | Finding | Resolution |
 | --- | --- |
-| A committed SQLite database contains 5 accounts and 54 posts; profile uploads and logs were also tracked | Removed these files from the current Git tree and excluded them from future Git commits and image builds. Local copies are preserved. Historical exposure remains; see below. |
+| A committed SQLite database contains 5 accounts and 54 posts; profile uploads and logs were also tracked | Removed these files from the current tree and published branch history; excluded them from future Git commits and image builds. Local copies are preserved. Cached or cloned copies still require follow-up; see below. |
 | Django 3.1 and 2020-era dependencies | Upgraded to Django 5.2.19 LTS and current pinned dependencies; removed the unused AWS SDK/storage dependencies. The current requirements audit reported no known vulnerabilities. |
 | Configuration depended on an old host and S3 credentials | Explicit environment configuration, local persistent media storage, no embedded secret or deployment hostname. Startup rejects missing/weak secrets and wildcard hosts. |
 | Missing production transport settings | HTTPS redirects, secure cookies, HSTS, MIME-sniffing protection, frame denial, and same-origin referrer policy; explicitly relaxed settings only in the local example. |
@@ -37,11 +37,20 @@ all historical blobs are free of credentials. Rotate any credential known or
 suspected to have been published, and generate a fresh signing key for a new
 deployment.
 
-Complete historical removal requires a coordinated history rewrite (for example,
-with `git-filter-repo`) and a force push, followed by collaborator re-clones and
-GitHub's sensitive-data removal process where cached references remain. That
-changes existing commit IDs and must be approved separately. The ordinary cleanup
-commits preserve published history.
+With the owner's approval, `master` history was rewritten with `git-filter-repo`
+and updated using a protected force push. The purge removed 55 private or
+generated paths: databases, uploads, logs, bytecode, and IDE files. Verification
+found no matching paths in the rewritten branch history, and the latest
+application tree was identical before and after the rewrite. The local branch
+was aligned and its old branch reflogs expired. Local data files were preserved.
+
+**GitHub still serves a cached historical database URL. GitHub Support must remove
+these cached references.** A private request draft and cleanup metadata are saved
+in the ignored `backups/` directory of the working copy. Submit the draft through
+[GitHub Support](https://support.github.com/) and follow their sensitive-data
+removal process; a force push alone cannot remove these caches. Existing clones
+must be replaced or carefully cleaned before further pushes so old data is not
+reintroduced. Copies held by other people cannot be recalled.
 
 ## Operational requirements
 
