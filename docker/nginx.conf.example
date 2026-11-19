@@ -1,0 +1,43 @@
+# Put in your host's nginx http context (e.g. /etc/nginx/conf.d/blog.conf).
+# Replace blog.example.com and provision its TLS certificate first.
+limit_req_zone $binary_remote_addr zone=blog_auth:10m rate=10r/m;
+limit_req_zone $binary_remote_addr zone=blog_general:10m rate=10r/s;
+log_format blog_safe '$remote_addr $request_method $status $body_bytes_sent';
+
+upstream django_blog {
+    server 127.0.0.1:8000;
+}
+
+server {
+    listen 80;
+    server_name blog.example.com;
+    return 301 https://blog.example.com$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name blog.example.com;
+    ssl_certificate /etc/letsencrypt/live/blog.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/blog.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 6m;
+    limit_req_status 429;
+    # Reset links contain tokens; never log request paths or query strings.
+    access_log /var/log/nginx/blog-access.log blog_safe;
+
+    location ~ ^/(login/|register/|password-reset/|admin/login/) {
+        limit_req zone=blog_auth burst=10 nodelay;
+        proxy_pass http://django_blog;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
+
+    location / {
+        limit_req zone=blog_general burst=20 nodelay;
+        proxy_pass http://django_blog;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
+}
