@@ -1,0 +1,15 @@
+# Only these application files may enter the image build context.
+**
+!requirements.txt
+!manage.py
+!Mysite/
+!Mysite/*.py
+!blog/
+!blog/**/*.py
+!blog/templates/**
+!blog/static/**
+!usersapp/
+!usersapp/**/*.py
+!usersapp/templates/**
+!docker/
+!docker/entrypoint.sh
